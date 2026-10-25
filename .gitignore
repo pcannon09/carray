@@ -9,6 +9,7 @@ build/
 docs/
 .root_dir
 __cmake_systeminformation/
+run.sh
 
 # FILES
 .bak
