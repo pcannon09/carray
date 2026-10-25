@@ -1,0 +1,23 @@
+# PRIVATE
+.private/*
+!.private/project.json
+
+# GENERATED (CACHE, BUILD, ...)
+logs/
+build/
+.cache/
+docs/
+.root_dir
+__cmake_systeminformation/
+
+# FILES
+.bak
+.tmp
+.swp
+
+# OS
+.DS_Store
+
+# UTILITY FILES
+gitCommit.sh
+
