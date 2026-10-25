@@ -1,10 +1,12 @@
 #!/bin/bash
 
-# PCANNON GEN.SH v1.0S - FROM PCANNON PROJECT STANDARDS
-# STANDARD: 20250608
+# PCANNON GEN.SH v1.1S - FROM PCANNON PROJECT STANDARDS
+# STANDARD: 20260714
 # https://github.com/pcannon09/pcannonProjectStandards
 
 source ./utils/inc/sh/colors.sh
+
+PASTWD=$PWD
 
 DIR_GEN=(
 		".private"
@@ -12,73 +14,84 @@ DIR_GEN=(
 )
 
 FILE_GEN=(
-		".private/dev/compilation.json"
 		".root_dir"
+		".private/dev/compilation.json"
 )
 
-function changeDir {
-    cd $1
+PROJECT_INFO_PATH=".private/project.json"
+GENERATED=0
 
-    echo -e "${UNDERLINE}[ * ] Moved to \`$1\`${RESET}"
-}
+projectName=$(jq -r '.exeName' "$PROJECT_INFO_PATH")
 
-if [ "$1" == "ungen" ]; then
-    echo -e "${BOLD}[ * ] Removing generated files"
-    echo -e "${RED}[ WARN ] Are you sure that you want to continue? This will remove all existing data [ Y / N / GET ]${RESET}"
+if [ "$1" == "link" ]; then
+	readonly DEST="$PWD/run.sh"
 
-    read answer
+	if [ -f "$DEST" ]; then
+		rm -vf "$DEST"
+	fi
 
-    if [ "${answer,,}" == "yes" ] || [ "${answer,,}" == "y" ]; then
-        printf "[ DEL ] Deleting all from \`.private/\` " ; find .private -mindepth 1 ! -name "project.json" -delete ; echo "[ DONE ]"
+	if [ "$2" == "root" ]; then
+		ln -vs ./build/${projectName} $DEST
+	else
+		ln -vs ./build/bin/${projectName} $DEST
+	fi
 
-        echo -e "[ DONE ]${RESET}"
+	GENERATED=1
 
-    elif [ "${answer,,}" == "get" ]; then
-        tree .private/
-        
-        echo "[ DONE ]"
+elif [ "$1" == "ungen" ]; then
+	echo -e "${BOLD}[ * ] Removing generated files"
+	echo -e "${RED}[ WARN ] Are you sure that you want to continue? This will remove all existing data [ Y / N / GET ]${RESET}"
 
-    else
-        echo -e "${RESET}Abort."
-    fi
+	read answer
 
-    echo -e "${BOLD}${CYAN}[ NOTE ] Execute this file without the \`ungen\` flag to generate all files"
-    exit
+	if [ "${answer,,}" == "yes" ] || [ "${answer,,}" == "y" ]; then
+		printf "[ DEL ] Deleting all from \`.private/\` " ; find .private -mindepth 1 ! -name "project.json" -delete ; echo "[ DONE ]"
 
-elif [ "$1" == "recommended" ]; then
-	readonly TO_CAT=".private/dev/compilation.json"
-	
-	printf "${BOLD}${BRIGHT_GREEN}[ CAT ] Setting value of \`$TO_CAT\` directory${RESET} "
+		echo -e "[ DONE ]${RESET}"
 
-	cat > .private/dev/compilation.json <<'EOF'
-{
-  "cores": 4,
-  "enableBackup": "NO",
-  "macros": [ ]
-}
-EOF
+	elif [ "${answer,,}" == "get" ]; then
+		tree .private/
 
-	echo -e "${BOLD}${BRIGHT_GREEN}[ OK ]${RESET}"
+		echo "[ DONE ]"
 
+	else
+		echo -e "${RESET}Abort."
+	fi
+
+	echo -e "${BOLD}${CYAN}[ NOTE ] Execute this file without the \`ungen\` flag to generate all files"
 	exit
 
 elif [ "$1" == "doxygen" ]; then
 	doxygen Doxyfile
-
-	exit
 fi
 
 for dir in "${DIR_GEN[@]}"; do
+	if [ -d "$dir" ]; then
+		continue
+	fi
+
 	printf "${BOLD}${BRIGHT_GREEN}[ MKDIR ] Generating \`$dir\` directory${RESET} " ; mkdir -p $dir ; echo -e "${BOLD}${BRIGHT_GREEN}[ OK ]${RESET}"
+
+	GENERATED=1
 done
 
 for file in "${FILE_GEN[@]}"; do
+	if [ -f "$file" ]; then
+		continue
+	fi
+
 	printf "${BOLD}${BRIGHT_GREEN}[ TOUCH ] Generating \`$file\` file${RESET} " ; touch $file ; echo -e "${BOLD}${BRIGHT_GREEN}[ OK ]${RESET}"
+	GENERATED=1
 done
 
 if [ -f "Doxyfile" ]; then
 	doxygen Doxyfile
 fi
 
-echo -e "[ DONE ]"
+if [ $GENERATED -eq 1 ]; then
+	echo -e "[ DONE ]"
+
+elif [ $GENERATED -eq 0 ]; then
+	echo -e "[ DONE ] No files to generate"
+fi
 
