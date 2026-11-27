@@ -1,7 +1,8 @@
-#include <stdlib.h>
-
 #include "carray/carr.h"
 #include "carray/CARRpredefines.h"
+
+#include <stdlib.h>
+#include <string.h>
 
 CARR carr_init(const size_t cap, const bool dynamic)
 {
@@ -85,29 +86,62 @@ CARRError carr_pushFront(CARR *vec, void *item)
 	return CARR_VEC_OK;
 }
 
+CARRError carr_split(CARR *vec, const char *str, const char *del)
+{
+	if (!vec || !vec->__initialized)
+		return CARR_VEC_NULL;
+
+	char *strDupped = CARR_Strdup(str);
+	char *tok = strtok(strDupped, del);
+
+	while (tok != NULL)
+	{
+		const CARRError error = carr_pushBack(vec, tok);
+
+		if (error != CARR_VEC_OK)
+			return error;
+
+		tok = strtok(NULL, del);
+	}
+
+	return CARR_VEC_OK;
+}
+
+CARRError carr_clear(CARR *vec)
+{
+	if (!vec || !vec->__initialized)
+		return CARR_VEC_NULL;
+
+	while (vec->size > 0)
+	{
+		const CARRError error = carr_deleteIndex(vec, 0, true);
+
+		if (error != CARR_VEC_OK)
+			return error;
+	}
+
+	return CARR_VEC_OK;
+}
+
 CARRError carr_deleteIndex(CARR *vec, const size_t index, const bool fall)
 {
 	if (!vec || !vec->__initialized)
 		return CARR_VEC_NULL;
 
+	if (index >= vec->size)
+		return CARR_VEC_OutOfBounds;
+
 	if (!fall)
 	{
 		vec->vec[index] = NULL;
-
 		return CARR_VEC_OK;
 	}
 
-	// else:
-	// NOT (expr) !!
-	if (!(vec->size > index + 1))
-		return CARR_VEC_OutOfBounds;
-
-	// Shift element by ONE
-	for (size_t i = index ; i + 1 < vec->size ; ++i)
+	// Shift elements to the left.
+	for (size_t i = index; i + 1 < vec->size; ++i)
 		vec->vec[i] = vec->vec[i + 1];
 
-	vec->vec[vec->size - 1] = NULL;
-	vec->size--;
+	vec->vec[--vec->size] = NULL;
 
 	return CARR_VEC_OK;
 }

@@ -83,18 +83,23 @@ typedef enum CARRError
 {
 	/** @brief The operation completed successfully. */
 	CARR_VEC_OK,
+# 	define CARR_OK 					CARR_VEC_OK
 
 	/** @brief The requested index is outside the valid range. */
 	CARR_VEC_OutOfBounds,
+# 	define CARR_OutOfBounds 		CARR_VEC_OutOfBounds
 
 	/** @brief The requested resize operation could not be completed. */
 	CARR_VEC_ResizeError,
+# 	define CARR_ResizeError 		CARR_VEC_ResizeError
 
 	/** @brief Memory allocation failed. */
 	CARR_VEC_OOM,
+# 	define CARR_OOM 				CARR_VEC_OOM
 
 	/** @brief A required pointer argument was NULL. */
 	CARR_VEC_NULL,
+# 	define CARR_NULL 				CARR_VEC_NULL
 } CARRError;
 
 /**
@@ -213,6 +218,9 @@ CARRError carr_pushFront(CARR *vec, void *item);
  *	   positions in the vector are changed.
  */
 CARRError carr_reverse(CARR *vec);
+
+CARRError carr_split(CARR *vec, const char *str, const char *del);
+CARRError carr_clear(CARR *vec);
 
 /**
  * @brief Destroys a vector and releases its internal resources.
