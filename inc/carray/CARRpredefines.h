@@ -51,3 +51,10 @@
 #	warning "Current platform might not be supported"
 #endif // defined(WIN32) // Platform check
 
+#ifdef CARR_OS_WIN32
+# 	define CARR_Strdup _strdup
+#else
+# 	define _GNU_SOURCE
+# 	define CARR_Strdup strdup
+#endif
+
